@@ -7,7 +7,7 @@ export default function TabLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
@@ -37,7 +37,6 @@ export default function TabLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.navigate("/modal");
           },
         }}
         options={{
@@ -71,6 +70,14 @@ export default function TabLayout() {
               color={focused ? "black" : "gray"}
             />
           ),
+        }}
+      />
+      {/* 탭을 사라지게 하지만 이동은 가능 */}
+      <Tabs.Screen
+        name="(post)/[username]/post/[postId]"
+        options={{
+          tabBarLabel: () => null,
+          href: null,
         }}
       />
     </Tabs>
