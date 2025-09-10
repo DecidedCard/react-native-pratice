@@ -5,8 +5,6 @@ export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
 
-  console.log("pathname", pathname);
-
   return (
     <View
       style={{
