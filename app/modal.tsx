@@ -54,6 +54,7 @@ export default function Modal() {
   const [threads, setThreads] = useState<Thread[]>([
     { id: Date.now().toString(), text: "", imageUris: [] },
   ]);
+
   const [isPosting, setIsPosting] = useState(false);
 
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
@@ -61,6 +62,14 @@ export default function Modal() {
   const handleCancel = () => {};
 
   const handlePost = () => {};
+
+  const updateThreadHashtag = (id: string, hashtag: string) => {
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === id ? { ...thread, hashtag } : thread
+      )
+    );
+  };
 
   const updateThreadText = (id: string, text: string) => {
     setThreads((prevThreads) =>
@@ -108,7 +117,19 @@ export default function Modal() {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
-          <Text style={styles.username}>zerohch0</Text>
+          <View style={styles.usernameAndHashtagContainer}>
+            <Text style={styles.username}>zerohch0</Text>
+            <View>
+              <Ionicons name="chevron-forward" size={12} color={"#999"} />
+            </View>
+            <TextInput
+              placeholder="Add a topic"
+              style={styles.hashtagInput}
+              value={item.hashtag}
+              placeholderTextColor="#999"
+              onChangeText={(hashtag) => updateThreadHashtag(item.id, hashtag)}
+            />
+          </View>
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeThread(item.id)}
@@ -308,10 +329,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 2,
   },
+  usernameAndHashtagContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   username: {
     fontWeight: "600",
     fontSize: 15,
     color: "#000",
+  },
+  hashtagInput: {
+    fontSize: 16,
+    color: "#000",
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   input: {
     fontSize: 15,
