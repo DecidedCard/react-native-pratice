@@ -1,5 +1,7 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
+import * as MediaLibrary from "expo-media-library";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -8,6 +10,7 @@ import {
   Image,
   Linking,
   Pressable,
+  Modal as RNModal,
   StyleSheet,
   Text,
   TextInput,
@@ -59,6 +62,8 @@ export default function Modal() {
   ]);
 
   const [isPosting, setIsPosting] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [replyOption, setReplyOption] = useState("");
 
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
 
@@ -82,12 +87,12 @@ export default function Modal() {
     );
   };
 
-  const canAddThread = (threads.at(-1)?.text.trim().length ?? 0) > 0;
-  const canPost = threads.every((thread) => thread.text.trim().length > 0);
-
-  const addImageToThread = (id: string, uri: string) => {};
-
-  const addLocationToThread = (id: string, location: [number, number]) => {};
+  const canAddThread =
+    (threads.at(-1)?.text.trim().length ?? 0) > 0 ||
+    (threads.at(-1)?.imageUris.length ?? 0) > 0;
+  const canPost = threads.every(
+    (thread) => thread.text.trim().length > 0 || thread.imageUris.length > 0
+  );
 
   const removeThread = (id: string) => {
     setThreads((prevThreads) =>
@@ -95,11 +100,106 @@ export default function Modal() {
     );
   };
 
-  const pickImage = async (id: string) => {};
+  const pickImage = async (id: string) => {
+    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  const takePhoto = async (id: string) => {};
+    if (status !== "granted") {
+      Alert.alert(
+        "Library",
+        "Please grant library permission to user this feature",
+        [
+          {
+            text: "Open settings",
+            onPress: () => {
+              Linking.openSettings();
+            },
+          },
+          { text: "Cancel" },
+        ]
+      );
+      return;
+    }
 
-  const removeImageFromThread = (id: string, uriToRemove: string) => {};
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+
+    if (!result.canceled) {
+      setThreads((prevThread) =>
+        prevThread.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUris: thread.imageUris.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+    }
+  };
+
+  const takePhoto = async (id: string) => {
+    let { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera",
+        "Please grant camera permission to user this feature",
+        [
+          {
+            text: "Open settings",
+            onPress: () => {
+              Linking.openSettings();
+            },
+          },
+          { text: "Cancel" },
+        ]
+      );
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+
+    if (!result.canceled) {
+      setThreads((prevThread) =>
+        prevThread.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUris: thread.imageUris.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+      let { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === "granted" && result.assets[0].uri) {
+        MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
+      }
+    }
+  };
+
+  const removeImageFromThread = (id: string, uriToRemove: string) => {
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === id
+          ? {
+              ...thread,
+              imageUris: thread.imageUris.filter((uri) => uri !== uriToRemove),
+            }
+          : thread
+      )
+    );
+  };
 
   const getMyLocation = async (id: string) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -127,9 +227,6 @@ export default function Modal() {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
     });
-
-    console.log("address", address);
-    console.log("address", `${address[0].country} ${address[0].city}`);
 
     setThreads((prevThreads) =>
       prevThreads.map((thread) =>
@@ -161,7 +258,7 @@ export default function Modal() {
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
           <View style={styles.usernameAndHashtagContainer}>
-            <Text style={styles.username}>zerohch0</Text>
+            <Text style={styles.username}>username</Text>
             <View>
               <Ionicons name="chevron-forward" size={12} color={"#999"} />
             </View>
@@ -284,9 +381,48 @@ export default function Modal() {
         keyboardShouldPersistTaps="handled"
       />
 
+      <RNModal
+        transparent={true}
+        visible={isDropdownVisible}
+        animationType="fade"
+        onRequestClose={() => setIsDropdownVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsDropdownVisible(false)}
+        >
+          <View
+            style={[styles.dropdownContainer, { bottom: insets.bottom + 30 }]}
+          >
+            {replyOptions.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.dropdownOption,
+                  option === replyOption && styles.selectedOption,
+                ]}
+                onPress={() => {
+                  setReplyOption(option);
+                  setIsDropdownVisible(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.dropdownOptionText,
+                    option === replyOption && styles.selectedOptionText,
+                  ]}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </RNModal>
+
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
-        <Pressable>
-          <Text style={styles.footerText}>can reply & quote</Text>
+        <Pressable onPress={() => setIsDropdownVisible(true)}>
+          <Text style={styles.footerText}>{replyOption} can reply & quote</Text>
         </Pressable>
         <Pressable
           style={[styles.postButton, !canPost && styles.postButtonDisabled]}
