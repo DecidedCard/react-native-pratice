@@ -1,4 +1,11 @@
+import {
+  ASYNC_STORAGE_USER,
+  SECURE_ACCESS_TOKEN,
+  SECURE_REFRESH_TOKEN,
+} from "@/const/storage-const";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Redirect, useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +16,6 @@ export default function Login() {
   const isLoggedIn = false;
 
   const onLogin = () => {
-    console.log("로그인");
     return fetch("/login", {
       method: "POST",
       body: JSON.stringify({
@@ -26,6 +32,11 @@ export default function Login() {
       })
       .then((data) => {
         console.log("data", data);
+        Promise.all([
+          SecureStore.setItemAsync(SECURE_ACCESS_TOKEN, data.accessToken),
+          SecureStore.setItemAsync(SECURE_REFRESH_TOKEN, data.refreshToken),
+          AsyncStorage.setItem(ASYNC_STORAGE_USER, JSON.stringify(data.user)),
+        ]).then(() => router.push("/(tabs)"));
       })
       .catch(console.error);
   };
