@@ -1,17 +1,58 @@
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import React from "react";
-import { Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Login() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const isLoggedIn = false;
+
+  const onLogin = () => {
+    console.log("로그인");
+    return fetch("/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: "card",
+        password: "1234",
+      }),
+    })
+      .then((res) => {
+        console.log("res", res.status);
+        if (res.status >= 400) {
+          return Alert.alert("Error", "Invalid credentials");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("data", data);
+      })
+      .catch(console.error);
+  };
 
   if (isLoggedIn) {
     return <Redirect href={"/(tabs)"} />;
   }
 
   return (
-    <View>
-      <Text>Login</Text>
+    <View style={{ paddingTop: insets.top }}>
+      <Text>Back</Text>
+      <Pressable onPress={onLogin} style={styles.loginButton}>
+        <Text style={styles.loginButtonText}>Login</Text>
+      </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  loginButton: {
+    backgroundColor: "blue",
+    padding: 10,
+    borderRadius: 6,
+    width: 100,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "white",
+  },
+});

@@ -17,6 +17,7 @@ const AnimatedTabBarButton = ({
   style,
 }: BottomTabBarButtonProps) => {
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const router = useRouter();
 
   const handlePressOut = () => {
     Animated.sequence([
@@ -52,7 +53,7 @@ const AnimatedTabBarButton = ({
 
 export default function TabLayout() {
   const router = useRouter();
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {
@@ -63,6 +64,10 @@ export default function TabLayout() {
     setIsLoginModalOpen(false);
   };
 
+  const toLoginPage = () => {
+    setIsLoginModalOpen(false);
+    router.push("/login");
+  };
   return (
     <>
       <Tabs
@@ -192,7 +197,9 @@ export default function TabLayout() {
               borderTopEndRadius: 12,
             }}
           >
-            <Text>Login Modal</Text>
+            <Pressable onPress={toLoginPage}>
+              <Text>Login Modal</Text>
+            </Pressable>
             <TouchableOpacity onPress={closeLoginModal}>
               <Ionicons name="close" size={24} color={"#555"} />
             </TouchableOpacity>
