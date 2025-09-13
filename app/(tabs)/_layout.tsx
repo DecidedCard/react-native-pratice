@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   Animated,
   Modal,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { AuthContext } from "../_layout";
 
 const AnimatedTabBarButton = ({
   children,
@@ -17,7 +18,6 @@ const AnimatedTabBarButton = ({
   style,
 }: BottomTabBarButtonProps) => {
   const scaleValue = useRef(new Animated.Value(1)).current;
-  const router = useRouter();
 
   const handlePressOut = () => {
     Animated.sequence([
@@ -53,7 +53,8 @@ const AnimatedTabBarButton = ({
 
 export default function TabLayout() {
   const router = useRouter();
-  const isLoggedIn = false;
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = !!user;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {

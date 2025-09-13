@@ -1,12 +1,22 @@
+import { AuthContext } from "@/app/_layout";
 import { BlurView } from "expo-blur";
 import { usePathname, useRouter } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useContext } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
-  const isLoggedIn = false;
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = !!user;
 
   return (
     <SafeAreaView style={style.container}>
@@ -15,12 +25,15 @@ export default function Index() {
           style={style.headerLogo}
           source={require("../../../assets/images/react-logo.png")}
         />
-        <TouchableOpacity
-          style={style.loginButton}
-          onPress={() => router.navigate("/login")}
-        >
-          {!isLoggedIn && <Text style={style.loginButtonText}>로그인</Text>}
-        </TouchableOpacity>
+
+        {!isLoggedIn && (
+          <Pressable
+            style={style.loginButton}
+            onPress={() => router.navigate("/login")}
+          >
+            <Text style={style.loginButtonText}>로그인</Text>
+          </Pressable>
+        )}
       </BlurView>
 
       {isLoggedIn && (
