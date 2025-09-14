@@ -1,7 +1,9 @@
 import { AuthContext } from "@/app/_layout";
+import SideMenu from "@/components/SideMenu";
+import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { usePathname, useRouter } from "expo-router";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   Image,
   Pressable,
@@ -15,12 +17,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
 
   return (
     <SafeAreaView style={style.container}>
-      <BlurView intensity={80} style={style.header}>
+      <BlurView intensity={70} style={style.header}>
+        {isLoggedIn && (
+          <Pressable
+            style={style.menuButton}
+            onPress={() => setIsSideMenuOpen(true)}
+          >
+            <Ionicons name="menu" size={24} color="black" />
+          </Pressable>
+        )}
+        <SideMenu
+          isVisible={isSideMenuOpen}
+          onClose={() => setIsSideMenuOpen(false)}
+        />
+
         <Image
           style={style.headerLogo}
           source={require("../../../assets/images/react-logo.png")}
@@ -91,10 +107,16 @@ const style = StyleSheet.create({
   header: {
     alignItems: "center",
   },
+  menuButton: {
+    position: "absolute",
+    top: 10,
+    left: 20,
+  },
   headerLogo: {
     width: 42,
     height: 42,
   },
+
   loginButton: {
     position: "absolute",
     top: 0,
