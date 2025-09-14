@@ -5,13 +5,13 @@ import {
   Appearance,
   Modal,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthContext } from "../app/_layout";
 
 interface SideMenuProps {
@@ -20,6 +20,7 @@ interface SideMenuProps {
 }
 
 const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
+  const insets = useSafeAreaInsets();
   const { logout } = useContext(AuthContext);
   const colorScheme = useColorScheme();
   const [isAppearanceVisible, setIsAppearanceVisible] = useState(false);
@@ -60,12 +61,13 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
             onPress={onClose}
           />
 
-          <SafeAreaView
+          <View
             style={[
               styles.menuContainer,
               colorScheme === "dark"
                 ? styles.menuContainerDark
                 : styles.menuContainerLight,
+              { marginTop: insets.top },
             ]}
           >
             {/* Header inside the menu if needed, or just items */}
@@ -131,7 +133,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </SafeAreaView>
+          </View>
         </BlurView>
       </Modal>
       <Modal
