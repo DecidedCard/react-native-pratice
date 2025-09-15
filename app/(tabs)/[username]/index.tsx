@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
 
   return (
     <View
@@ -11,6 +12,7 @@ export default function Index() {
         {
           paddingTop: insets.top,
         },
+        colorScheme === "dark" ? style.containerDark : style.containerLight,
       ]}
     >
       <Text>text</Text>
@@ -21,5 +23,11 @@ export default function Index() {
 const style = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  containerLight: {
+    backgroundColor: "white",
+  },
+  containerDark: {
+    backgroundColor: "#333",
   },
 });

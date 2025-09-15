@@ -10,7 +10,14 @@ import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
 import { withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { Navigator } = createMaterialTopTabNavigator();
@@ -24,19 +31,36 @@ export const MaterialTopTabs = withLayoutContext<
 
 export default function Layout() {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
 
   return (
-    <View style={[style.container, { paddingTop: insets.top }]}>
-      <BlurView intensity={70} style={style.header}>
+    <View
+      style={[
+        style.container,
+        { paddingTop: insets.top },
+        colorScheme === "dark" ? style.containerDark : style.containerLight,
+      ]}
+    >
+      <BlurView
+        intensity={colorScheme === "dark" ? 5 : 70}
+        style={[
+          style.header,
+          colorScheme === "dark" ? style.headerDark : style.headerLight,
+        ]}
+      >
         {isLoggedIn && (
           <Pressable
             style={style.menuButton}
             onPress={() => setIsSideMenuOpen(true)}
           >
-            <Ionicons name="menu" size={24} color="black" />
+            <Ionicons
+              name="menu"
+              size={24}
+              color={colorScheme === "dark" ? "gray" : "black"}
+            />
           </Pressable>
         )}
         <SideMenu
@@ -50,27 +74,39 @@ export default function Layout() {
             source={{ uri: user?.profileImageUrl }}
             style={style.profileAvatar}
           />
-          <Text>{user?.name}</Text>
-          <Text>{user?.id}</Text>
-          <Text>{user?.description}</Text>
+          <Text
+            style={colorScheme === "dark" ? style.textDark : style.textLight}
+          >
+            {user?.name}
+          </Text>
+          <Text
+            style={colorScheme === "dark" ? style.textDark : style.textLight}
+          >
+            {user?.id}
+          </Text>
+          <Text
+            style={colorScheme === "dark" ? style.textDark : style.textLight}
+          >
+            {user?.description}
+          </Text>
         </View>
       </View>
       <MaterialTopTabs
         screenOptions={{
           lazy: true,
           tabBarStyle: {
-            backgroundColor: "white",
+            backgroundColor: colorScheme === "dark" ? "#333" : "white",
             shadowColor: "transparent",
             position: "relative",
           },
           tabBarPressColor: "transparent",
-          tabBarActiveTintColor: "#555",
+          tabBarActiveTintColor: colorScheme === "dark" ? "white" : "#333",
           tabBarIndicatorStyle: {
-            backgroundColor: "black",
+            backgroundColor: colorScheme === "dark" ? "white" : "#333",
             height: 1,
           },
           tabBarIndicatorContainerStyle: {
-            backgroundColor: "#aaa",
+            backgroundColor: colorScheme === "dark" ? "#aaa" : "#555",
             position: "absolute",
             top: 49,
             height: 1,
@@ -89,9 +125,21 @@ const style = StyleSheet.create({
   container: {
     flex: 1,
   },
+  containerLight: {
+    backgroundColor: "white",
+  },
+  containerDark: {
+    backgroundColor: "#333",
+  },
   header: {
     alignItems: "center",
     height: 50,
+  },
+  headerLight: {
+    backgroundColor: "white",
+  },
+  headerDark: {
+    backgroundColor: "#333",
   },
   menuButton: {
     position: "absolute",
@@ -105,6 +153,8 @@ const style = StyleSheet.create({
     alignItems: "center",
   },
   profileAvatar: { width: 50, height: 50, borderRadius: 25 },
+  textLight: { color: "#333" },
+  textDark: { color: "white" },
   headerLogo: {
     width: 42,
     height: 42,

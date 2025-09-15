@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,6 +19,7 @@ export default function Activity() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
@@ -37,18 +39,28 @@ export default function Activity() {
 
   return (
     <View
-      style={{
-        flex: 1,
-        paddingTop: insets.top,
-      }}
+      style={[
+        style.container,
+        {
+          paddingTop: insets.top,
+        },
+        colorScheme === "dark" ? style.containerDark : style.containerLight,
+      ]}
     >
-      <BlurView intensity={70} style={style.header}>
+      <BlurView
+        intensity={colorScheme === "dark" ? 5 : 70}
+        style={style.header}
+      >
         {isLoggedIn && (
           <Pressable
             style={style.menuButton}
             onPress={() => setIsSideMenuOpen(true)}
           >
-            <Ionicons name="menu" size={24} color="black" />
+            <Ionicons
+              name="menu"
+              size={24}
+              color={colorScheme === "dark" ? "gray" : "black"}
+            />
           </Pressable>
         )}
         <SideMenu
@@ -59,32 +71,56 @@ export default function Activity() {
       <View style={style.tabBar}>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity")}>
-            <Text>All</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              All
+            </Text>
           </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity/follow")}>
-            <Text>Follow</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              Follow
+            </Text>
           </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity/replies")}>
-            <Text>Replies</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              Replies
+            </Text>
           </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity/quotes")}>
-            <Text>Quotes</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              Quotes
+            </Text>
           </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity/reposts")}>
-            <Text>Reposts</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              Reposts
+            </Text>
           </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={() => router.push("/activity/verified")}>
-            <Text>Verified</Text>
+            <Text
+              style={colorScheme === "dark" ? style.textDark : style.textLight}
+            >
+              Verified
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -95,6 +131,12 @@ export default function Activity() {
 const style = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  containerLight: {
+    backgroundColor: "white",
+  },
+  containerDark: {
+    backgroundColor: "#333",
   },
   header: {
     alignItems: "center",
@@ -109,6 +151,8 @@ const style = StyleSheet.create({
     width: 42,
     height: 42,
   },
+  textLight: { color: "#333" },
+  textDark: { color: "white" },
   tabBar: {
     flexDirection: "row",
     justifyContent: "space-between",
