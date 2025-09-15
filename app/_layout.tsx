@@ -9,17 +9,21 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
 
-interface User {
+export interface User {
   id: string;
   name: string;
   profileImageUrl: string;
   description: string;
+  link?: string;
+  showInstagramBadge?: boolean;
+  isPrivate?: boolean;
 }
 
 export const AuthContext = createContext<{
   user?: User | null;
   login?: () => Promise<void>;
   logout?: () => Promise<void[]>;
+  updateUser?: (user: User) => void;
 }>({});
 
 export default function RootLayout() {
@@ -65,8 +69,13 @@ export default function RootLayout() {
     ]);
   };
 
+  const updateUser = (user: User) => {
+    setUser(user);
+    AsyncStorage.setItem("user", JSON.stringify(user));
+  };
+
   return (
-    <AuthContext value={{ user, login, logout }}>
+    <AuthContext value={{ user, login, logout, updateUser }}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />

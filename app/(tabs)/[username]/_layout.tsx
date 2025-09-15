@@ -1,4 +1,5 @@
 import { AuthContext } from "@/app/_layout";
+import EditProfileModal from "@/components/EditProfileModal";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -8,11 +9,12 @@ import {
 } from "@react-navigation/material-top-tabs";
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
-import { withLayoutContext } from "expo-router";
+import { useLocalSearchParams, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
 import {
   Image,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   useColorScheme,
@@ -32,9 +34,29 @@ export const MaterialTopTabs = withLayoutContext<
 export default function Layout() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+
+  const { username } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
+  const isOwnProfile = isLoggedIn && user?.id === username?.slice(1);
+
+  const handleOpenEditModal = () => {
+    setIsEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => setIsEditModalVisible(false);
+
+  const handleShareProfile = async () => {
+    console.log("share profile");
+    try {
+      await Share.share({ message: `practice://@${username}` });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <View
@@ -75,22 +97,107 @@ export default function Layout() {
             style={style.profileAvatar}
           />
           <Text
-            style={colorScheme === "dark" ? style.textDark : style.textLight}
+            style={[
+              style.profileName,
+              colorScheme === "dark"
+                ? style.profileNameDark
+                : style.profileNameLight,
+            ]}
           >
             {user?.name}
           </Text>
           <Text
-            style={colorScheme === "dark" ? style.textDark : style.textLight}
+            style={[
+              { marginBottom: 16 },
+              colorScheme === "dark"
+                ? style.profileTextDark
+                : style.profileTextLight,
+            ]}
           >
             {user?.id}
           </Text>
           <Text
-            style={colorScheme === "dark" ? style.textDark : style.textLight}
+            style={[
+              colorScheme === "dark"
+                ? style.profileTextDark
+                : style.profileTextLight,
+            ]}
           >
             {user?.description}
           </Text>
         </View>
+        <View style={style.profileActions}>
+          {isOwnProfile ? (
+            <Pressable
+              style={[
+                style.actionButton,
+                colorScheme === "dark"
+                  ? style.actionButtonDark
+                  : style.actionButtonLight,
+              ]}
+              onPress={handleOpenEditModal}
+            >
+              <Text
+                style={[
+                  style.actionButtonText,
+                  colorScheme === "dark"
+                    ? style.actionButtonTextDark
+                    : style.actionButtonTextLight,
+                ]}
+              >
+                Edit profile
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={[
+                style.actionButton,
+                colorScheme === "dark"
+                  ? style.actionButtonDark
+                  : style.actionButtonLight,
+              ]}
+            >
+              <Text
+                style={[
+                  style.actionButtonText,
+                  colorScheme === "dark"
+                    ? style.actionButtonTextDark
+                    : style.actionButtonTextLight,
+                ]}
+              >
+                Follow
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            style={[
+              style.actionButton,
+              colorScheme === "dark"
+                ? style.actionButtonDark
+                : style.actionButtonLight,
+            ]}
+            onPress={handleShareProfile}
+          >
+            <Text
+              style={[
+                style.actionButtonText,
+                colorScheme === "dark"
+                  ? style.actionButtonTextDark
+                  : style.actionButtonTextLight,
+              ]}
+            >
+              Share profile
+            </Text>
+          </Pressable>
+        </View>
       </View>
+      {user && (
+        <EditProfileModal
+          visible={isEditModalVisible}
+          onClose={handleCloseEditModal}
+          initialProfileData={user}
+        />
+      )}
       <MaterialTopTabs
         screenOptions={{
           lazy: true,
@@ -132,7 +239,10 @@ const style = StyleSheet.create({
     backgroundColor: "#333",
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 16,
     height: 50,
   },
   headerLight: {
@@ -146,13 +256,69 @@ const style = StyleSheet.create({
     top: 10,
     left: 20,
   },
-  profile: {},
+  profile: { padding: 16 },
   profileHeader: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  profileNameLight: {
+    color: "black",
+  },
+  profileNameDark: {
+    color: "white",
+  },
+  profileTextDark: {
+    color: "white",
+  },
+  profileTextLight: {
+    color: "black",
+  },
+  profileActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 16,
   },
-  profileAvatar: { width: 50, height: 50, borderRadius: 25 },
+  actionButton: {
+    flex: 1,
+    alignItems: "center",
+    gap: 16,
+    justifyContent: "center",
+    borderRadius: 8,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+  },
+  profileAvatar: {
+    position: "absolute",
+    right: 0,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  actionButtonLight: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  actionButtonDark: {
+    backgroundColor: "#101010",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  actionButtonTextLight: {
+    color: "#000",
+  },
+  actionButtonTextDark: {
+    color: "#fff",
+  },
   textLight: { color: "#333" },
   textDark: { color: "white" },
   headerLogo: {
