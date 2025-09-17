@@ -4,11 +4,16 @@ import {
   SECURE_REFRESH_TOKEN,
 } from "@/const/storage-const";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Asset } from "expo-asset";
+import Constants from "expo-constants";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { createContext, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { Alert, Animated, StyleSheet, View } from "react-native";
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export interface User {
   id: string;
@@ -27,14 +32,23 @@ export const AuthContext = createContext<{
   updateUser?: (user: User) => void;
 }>({});
 
-export default function RootLayout() {
+function AnimatedAppLoader({
+  children,
+  image,
+}: {
+  children: React.ReactNode;
+  image: number;
+}) {
   const [user, setUser] = useState<User | null>(null);
+  const [isSplashReady, setIsSplashReady] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(ASYNC_STORAGE_USER).then((user) => {
-      setUser(user ? JSON.parse(user) : null);
-    });
-  }, []);
+    async function prepare() {
+      Asset.loadAsync(image);
+      setIsSplashReady(true);
+    }
+    prepare();
+  }, [image]);
 
   const login = () => {
     return fetch("/login", {
@@ -72,16 +86,109 @@ export default function RootLayout() {
 
   const updateUser = (user: User) => {
     setUser(user);
-    AsyncStorage.setItem("user", JSON.stringify(user));
+    if (user) {
+      AsyncStorage.setItem(ASYNC_STORAGE_USER, JSON.stringify(user));
+    } else {
+      AsyncStorage.removeItem(ASYNC_STORAGE_USER);
+    }
   };
+
+  if (!isSplashReady) {
+    return null;
+  }
 
   return (
     <AuthContext value={{ user, login, logout, updateUser }}>
+      <AnimatedSplashScreen image={image}>{children}</AnimatedSplashScreen>
+    </AuthContext>
+  );
+}
+
+function AnimatedSplashScreen({
+  children,
+  image,
+}: {
+  children: React.ReactNode;
+  image: number;
+}) {
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
+    useState(false);
+  const animation = useRef(new Animated.Value(1)).current;
+  const { updateUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (isAppReady) {
+      Animated.timing(animation, {
+        toValue: 0,
+        duration: 2000,
+        useNativeDriver: true,
+      }).start(() => setIsSplashAnimationComplete(true));
+    }
+  }, [isAppReady, animation]);
+
+  const onImageLoaded = async () => {
+    try {
+      // 데이터 준비
+      await AsyncStorage.getItem(ASYNC_STORAGE_USER).then((user) => {
+        updateUser?.(user ? JSON.parse(user) : null);
+      });
+
+      await SplashScreen.hideAsync();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAppReady(true);
+    }
+  };
+
+  const rotateValue = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["360deg", "0deg"],
+  });
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {isAppReady && children}
+      {!isSplashAnimationComplete && (
+        <Animated.View
+          pointerEvents={"none"}
+          style={[
+            {
+              ...StyleSheet.absoluteFillObject,
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor:
+                Constants.expoConfig?.splash?.backgroundColor || "#ffffff",
+              opacity: animation,
+            },
+          ]}
+        >
+          <Animated.Image
+            source={image}
+            resizeMode={Constants.expoConfig?.splash?.resizeMode || "contain"}
+            style={{
+              width: Constants.expoConfig?.splash?.imageWidth || 200,
+              transform: [{ scale: animation }, { rotate: rotateValue }],
+            }}
+            onLoadEnd={onImageLoaded}
+            fadeDuration={0}
+          />
+        </Animated.View>
+      )}
+    </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AnimatedAppLoader image={require("../assets/images/react-logo.png")}>
       <StatusBar style="auto" animated />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>
-    </AuthContext>
+    </AnimatedAppLoader>
   );
 }
