@@ -1,7 +1,9 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import {
   Image,
+  Pressable,
   Share,
   StyleSheet,
   Text,
@@ -23,6 +25,7 @@ export interface Post {
   avatar?: string;
   image?: string;
   location?: [number, number];
+  link?: string;
 }
 
 export interface DetailedPost extends Post {
@@ -136,6 +139,11 @@ export default function PostDetail({ item }: { item: Post }) {
             style={styles.postImage}
             resizeMode="cover"
           />
+        )}
+        {item.link && (
+          <Pressable onPress={() => WebBrowser.openBrowserAsync(item.link!)}>
+            링크
+          </Pressable>
         )}
         {item.location && item.location.length > 0 && (
           <Text style={styles.postText}>{item.location.join(", ")}</Text>
