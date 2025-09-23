@@ -1,9 +1,39 @@
+import PostDetail, { Post } from "@/components/Post";
+import { FlashList } from "@shopify/flash-list";
+import { usePathname } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const path = usePathname();
+
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    setPosts([]);
+    const fetchData = async () => {
+      const res = await fetch(`/posts?type=${path.split("/").pop()}`);
+      const data = await res.json();
+      setPosts(data.posts);
+    };
+
+    fetchData();
+  }, [path]);
+
+  const onEndReached = useCallback(async () => {
+    if (posts.length > 0) {
+      const res = await fetch(
+        `/posts?type=${path.split("/").pop()}&cursor=${posts.at(-1)?.id}`
+      );
+      const data = await res.json();
+      if (data.posts.length > 0) {
+        setPosts((prev) => [...prev, ...data.posts]);
+      }
+    }
+  }, [path, posts]);
 
   return (
     <View
@@ -12,7 +42,14 @@ export default function Index() {
         { paddingTop: insets.top },
         colorScheme === "dark" ? style.containerDark : style.containerLight,
       ]}
-    ></View>
+    >
+      <FlashList
+        data={posts}
+        renderItem={({ item }) => <PostDetail item={item} />}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={2}
+      />
+    </View>
   );
 }
 

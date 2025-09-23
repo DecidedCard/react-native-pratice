@@ -62,7 +62,7 @@ if (__DEV__) {
         content: () => faker.lorem.paragraph(),
         imageUrls: () =>
           Array.from({ length: Math.floor(Math.random() * 3) }, () =>
-            faker.image.urlLoremFlickr()
+            faker.image.urlPicsumPhotos()
           ),
         likes: () => Math.floor(Math.random() * 100),
         comments: () => Math.floor(Math.random() * 100),
@@ -96,9 +96,14 @@ if (__DEV__) {
       });
 
       this.get("/posts", (schema, request) => {
-        const cursor = parseInt((request.queryParams.cursor as string) || "1");
-        const posts = schema.all("post").models.slice(cursor, cursor + 10);
-        return new Response(200, {}, { posts });
+        const posts = schema.all("post");
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
