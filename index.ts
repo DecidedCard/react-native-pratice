@@ -96,8 +96,7 @@ if (__DEV__) {
       });
 
       this.get("/posts", (schema, request) => {
-        console.log("user.all", schema.all("user").models);
-        const cursor = parseInt((request.queryParams.cursor as string) || "0");
+        const cursor = parseInt((request.queryParams.cursor as string) || "1");
         const posts = schema.all("post").models.slice(cursor, cursor + 10);
         return new Response(200, {}, { posts });
       });
@@ -107,24 +106,21 @@ if (__DEV__) {
         const comments = schema.all("post").models.slice(0, 10);
         return new Response(200, {}, { post, comments });
       });
+
       this.post("/login", (schema, request) => {
         const { username, password } = JSON.parse(request.requestBody);
 
-        if (username === "card" && password === "1234") {
-          return {
-            accessToken: "access-token",
-            refreshToken: "refresh-token",
-            user: {
-              id: "card",
-              name: "card",
-              description: "🐢 lover, programmer, youtuber",
-              profileImageUrl:
-                "https://avatars.githubusercontent.com/u/885857?v=4",
-            },
-          };
+        if (username === "card07" && password === "1234") {
+          const user = schema.find("user", username);
+          return user;
         } else {
           return new Response(401, {}, { message: "Invalid credentials" });
         }
+      });
+
+      this.get("/user", (schema, request) => {
+        const cursor = parseInt((request.queryParams.cursor as string) || "0");
+        return schema.all("user").models.slice(cursor, cursor + 10);
       });
     },
   });

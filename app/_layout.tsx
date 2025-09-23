@@ -54,7 +54,7 @@ function AnimatedAppLoader({
     return fetch("/login", {
       method: "POST",
       body: JSON.stringify({
-        username: "card",
+        username: "card07",
         password: "1234",
       }),
     })

@@ -1,16 +1,26 @@
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
+
+interface User {
+  id: string;
+  name: string;
+  description: string;
+  profileImageUrl: string;
+  isVerified: boolean;
+}
 
 export default function Index() {
   const insets = useSafeAreaInsets();
@@ -20,6 +30,18 @@ export default function Index() {
 
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userData, setUserData] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch("/user");
+      const data = await res.json();
+
+      setUserData(data);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <View
@@ -69,6 +91,15 @@ export default function Index() {
           onChangeText={setSearchQuery}
         />
       </View>
+      <ScrollView>
+        {userData.length &&
+          userData.map((i) => (
+            <View key={i.id}>
+              <Text>{i.name}</Text>
+              <Text>{i.id}</Text>
+            </View>
+          ))}
+      </ScrollView>
     </View>
   );
 }

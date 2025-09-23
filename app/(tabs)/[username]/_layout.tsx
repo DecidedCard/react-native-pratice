@@ -40,6 +40,7 @@ export default function Layout() {
 
   const { username } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
+  console.log(user);
   const isLoggedIn = !!user;
   const isOwnProfile = isLoggedIn && user?.id === username?.slice(1);
 

@@ -1,4 +1,3 @@
-import PostDetail from "@/components/Post";
 import { ScrollView, StyleSheet, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,7 +13,7 @@ export default function Index() {
         colorScheme === "dark" ? style.containerDark : style.containerLight,
       ]}
     >
-      <PostDetail
+      {/* <PostDetail
         item={{
           id: "0",
           username: "madison",
@@ -73,7 +72,7 @@ export default function Index() {
           image: `https://picsum.photos/800/600?random=${Math.random()}`,
           location: [37.125, 124.97],
         }}
-      />
+      /> */}
     </ScrollView>
   );
 }
