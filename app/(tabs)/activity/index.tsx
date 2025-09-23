@@ -6,6 +6,7 @@ import { BlurView } from "expo-blur";
 import { usePathname, useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -66,6 +67,10 @@ export default function Activity() {
         <SideMenu
           isVisible={isSideMenuOpen}
           onClose={() => setIsSideMenuOpen(false)}
+        />
+        <Image
+          style={style.headerLogo}
+          source={require("../../../assets/images/react-logo.png")}
         />
       </BlurView>
       <View>
@@ -175,6 +180,7 @@ const style = StyleSheet.create({
     backgroundColor: "#333",
   },
   header: {
+    justifyContent: "center",
     alignItems: "center",
     height: 50,
   },
@@ -192,7 +198,7 @@ const style = StyleSheet.create({
   textDark: { color: "white" },
   tabBar: {
     paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingVertical: 8,
     flexDirection: "row",
   },
   tabButton: {

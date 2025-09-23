@@ -68,12 +68,10 @@ export default function Layout() {
           isVisible={isSideMenuOpen}
           onClose={() => setIsSideMenuOpen(false)}
         />
-
         <Image
           style={style.headerLogo}
           source={require("../../../assets/images/react-logo.png")}
         />
-
         {!isLoggedIn && (
           <Pressable
             style={[
@@ -143,6 +141,7 @@ const style = StyleSheet.create({
     backgroundColor: "#333",
   },
   header: {
+    justifyContent: "center",
     alignItems: "center",
     height: 50,
   },

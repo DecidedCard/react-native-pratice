@@ -90,6 +90,10 @@ export default function Layout() {
           isVisible={isSideMenuOpen}
           onClose={() => setIsSideMenuOpen(false)}
         />
+        <Image
+          style={style.headerLogo}
+          source={require("../../../assets/images/react-logo.png")}
+        />
       </BlurView>
       <View style={style.profile}>
         <View style={style.profileHeader}>

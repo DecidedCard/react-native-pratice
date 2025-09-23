@@ -177,14 +177,15 @@ const style = StyleSheet.create({
     backgroundColor: "white",
   },
   containerDark: {
-    backgroundColor: "black",
+    backgroundColor: "#333",
   },
   header: {
+    justifyContent: "center",
     alignItems: "center",
     height: 50,
   },
   headerLight: { backgroundColor: "white" },
-  headerDark: { backgroundColor: "black" },
+  headerDark: { backgroundColor: "#333" },
   headerLogo: {
     width: 42,
     height: 42,
@@ -210,7 +211,7 @@ const style = StyleSheet.create({
   searchInputLight: { color: "#333" },
   searchInputDark: {
     color: "white",
-    backgroundColor: "black",
+    backgroundColor: "#333",
   },
 
   // 팔로우 텍스트
