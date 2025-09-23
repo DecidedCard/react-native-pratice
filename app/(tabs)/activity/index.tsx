@@ -7,9 +7,9 @@ import { usePathname, useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
@@ -68,61 +68,97 @@ export default function Activity() {
           onClose={() => setIsSideMenuOpen(false)}
         />
       </BlurView>
-      <View style={style.tabBar}>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+      <View>
+        <ScrollView horizontal style={style.tabBar}>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity")}
+              style={style.tabButton}
             >
-              All
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity/follow")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                All
+              </Text>
+            </Pressable>
+          </View>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity/follow")}
+              style={style.tabButton}
             >
-              Follow
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity/replies")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                Follow
+              </Text>
+            </Pressable>
+          </View>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity/replies")}
+              style={style.tabButton}
             >
-              Replies
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity/quotes")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                Replies
+              </Text>
+            </Pressable>
+          </View>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity/quotes")}
+              style={style.tabButton}
             >
-              Quotes
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity/reposts")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                Quotes
+              </Text>
+            </Pressable>
+          </View>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity/reposts")}
+              style={style.tabButton}
             >
-              Reposts
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity onPress={() => router.push("/activity/verified")}>
-            <Text
-              style={colorScheme === "dark" ? style.textDark : style.textLight}
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                Reposts
+              </Text>
+            </Pressable>
+          </View>
+          <View>
+            <Pressable
+              onPress={() => router.push("/activity/verified")}
+              style={style.tabButton}
             >
-              Verified
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text
+                style={
+                  colorScheme === "dark" ? style.textDark : style.textLight
+                }
+              >
+                Verified
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={style.contents}>
+        <Text>아직 활동이 없습니다.</Text>
       </View>
     </View>
   );
@@ -151,10 +187,27 @@ const style = StyleSheet.create({
     width: 42,
     height: 42,
   },
+  tabText: { fontSize: 15 },
   textLight: { color: "#333" },
   textDark: { color: "white" },
   tabBar: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
     flexDirection: "row",
-    justifyContent: "space-between",
+  },
+  tabButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 64,
+    height: 34,
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 20,
+    marginRight: 6,
+  },
+  contents: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
