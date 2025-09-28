@@ -18,6 +18,8 @@ declare global {
   }
 }
 
+let userData;
+
 if (__DEV__) {
   if (window.server) {
     window.server.shutdown();
@@ -70,7 +72,7 @@ if (__DEV__) {
       }),
     },
     seeds(server) {
-      server.create("user", {
+      userData = server.create("user", {
         id: "card07",
         name: "card",
         description: "🐢 lover, programmer",
@@ -79,6 +81,9 @@ if (__DEV__) {
       const users = server.createList("user", 10);
       users.forEach((user) => {
         server.createList("post", 5, { user });
+      });
+      server.createList("post", 5, {
+        user: userData,
       });
     },
     routes() {
@@ -96,7 +101,10 @@ if (__DEV__) {
       });
 
       this.get("/posts", (schema, request) => {
-        const posts = schema.all("post");
+        let posts = schema.all("post");
+        if (request.queryParams.type === "following") {
+          posts = posts.filter((post) => post.user?.id === userData.id);
+        }
         let targetIndex = -1;
         if (request.queryParams.cursor) {
           targetIndex = posts.models.findIndex(
