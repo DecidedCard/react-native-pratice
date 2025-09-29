@@ -1,8 +1,9 @@
-import PostDetail from "@/components/Post";
+import PostDetail, { Post } from "@/components/Post";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { FlashList } from "@shopify/flash-list";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -14,11 +15,32 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function Post() {
+export default function PostScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
+  const { postId } = useLocalSearchParams();
+
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    const fetchPostData = async () => {
+      const res = await fetch(`/posts/${postId}`);
+      const data = await res.json();
+      setPost(data.post);
+    };
+
+    const fetchCommentsData = async () => {
+      const res = await fetch(`/posts/${postId}/comments`);
+      const data = await res.json();
+      setComments(data.posts);
+    };
+
+    fetchPostData();
+    fetchCommentsData();
+  }, [postId]);
 
   return (
     <View
@@ -70,63 +92,26 @@ export default function Post() {
           onClose={() => setIsSideMenuOpen(false)}
         />
       </View>
-      <ScrollView style={styles.scrollView}>
-        <PostDetail
-          item={{
-            id: "1",
-            username: "zerocho",
-            displayName: "Zerocho",
-            content: "Hello, world!",
-            timeAgo: "1 hour ago",
-            likes: 10,
-            comments: 5,
-            reposts: 2,
-            isVerified: true,
-            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-            image: `https://picsum.photos/800/600?random=${Math.random()}`,
-          }}
-        />
-        <View style={styles.repliesHeader}>
-          <Text
-            style={
-              colorScheme === "dark"
-                ? styles.repliesHeaderDark
-                : styles.repliesHeaderLight
-            }
-          >
-            Replies
-          </Text>
-        </View>
-        <PostDetail
-          item={{
-            id: "2",
-            username: "sarah",
-            displayName: "Sarah",
-            content: "Hello, comment!",
-            timeAgo: "1 hour ago",
-            likes: 10,
-            comments: 5,
-            reposts: 2,
-            isVerified: true,
-            avatar: "https://randomuser.me/api/portraits/women/1.jpg",
-          }}
-        />
-        <PostDetail
-          item={{
-            id: "3",
-            username: "anne",
-            displayName: "Anne",
-            content: "Another comment!",
-            timeAgo: "1 hour ago",
-            likes: 10,
-            comments: 5,
-            reposts: 2,
-            isVerified: true,
-            avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-            image: `https://picsum.photos/800/600?random=${Math.random()}`,
-          }}
-        />
-      </ScrollView>
+      {post && (
+        <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+          <PostDetail item={post} />
+          <View style={styles.repliesHeader}>
+            <Text
+              style={
+                colorScheme === "dark"
+                  ? styles.repliesHeaderDark
+                  : styles.repliesHeaderLight
+              }
+            >
+              Replies
+            </Text>
+          </View>
+          <FlashList
+            data={comments}
+            renderItem={({ item }) => <PostDetail item={item} />}
+          />
+        </ScrollView>
+      )}
     </View>
   );
 }

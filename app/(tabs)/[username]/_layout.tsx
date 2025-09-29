@@ -1,4 +1,4 @@
-import { AuthContext } from "@/app/_layout";
+import { AuthContext, User } from "@/app/_layout";
 import EditProfileModal from "@/components/EditProfileModal";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +10,7 @@ import {
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
 import { useLocalSearchParams, withLayoutContext } from "expo-router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -37,12 +37,28 @@ export default function Layout() {
 
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [userState, setUserState] = useState<User | null>(null);
 
   const { username } = useLocalSearchParams();
   const { user } = useContext(AuthContext);
-  console.log(user);
+
   const isLoggedIn = !!user;
   const isOwnProfile = isLoggedIn && user?.id === username?.slice(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setUserState(null);
+      const res = await fetch(`/users/${username}`);
+      const data = await res.json();
+      setUserState(data.user);
+    };
+
+    if (username !== `@${user?.id}`) {
+      fetchData();
+    } else {
+      setUserState(user!);
+    }
+  }, [user, username]);
 
   const handleOpenEditModal = () => {
     setIsEditModalVisible(true);
@@ -98,7 +114,7 @@ export default function Layout() {
       <View style={style.profile}>
         <View style={style.profileHeader}>
           <Image
-            source={{ uri: user?.profileImageUrl }}
+            source={{ uri: userState?.profileImageUrl }}
             style={style.profileAvatar}
           />
           <Text
@@ -109,7 +125,7 @@ export default function Layout() {
                 : style.profileNameLight,
             ]}
           >
-            {user?.name}
+            {userState?.name}
           </Text>
           <Text
             style={[
@@ -119,7 +135,7 @@ export default function Layout() {
                 : style.profileTextLight,
             ]}
           >
-            {user?.id}
+            {userState?.id}
           </Text>
           <Text
             style={[
@@ -128,7 +144,7 @@ export default function Layout() {
                 : style.profileTextLight,
             ]}
           >
-            {user?.description}
+            {userState?.description}
           </Text>
         </View>
         <View style={style.profileActions}>
