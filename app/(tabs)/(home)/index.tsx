@@ -1,16 +1,28 @@
 import PostDetail, { Post } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
-import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, useColorScheme, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { PanResponder, StyleSheet, useColorScheme, View } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { AnimationContext } from "./_layout";
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<Post>);
 
 export default function Index() {
-  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
 
+  const isReadyToRefresh = useSharedValue(false);
+
   const [posts, setPosts] = useState<Post[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
+  const scrollPosition = useSharedValue(0);
+  const { pullDownPosition } = useContext(AnimationContext);
 
   useEffect(() => {
     setPosts([]);
@@ -33,9 +45,8 @@ export default function Index() {
     }
   }, [posts]);
 
-  const onRefresh = async () => {
+  const onRefresh = async (done: () => void) => {
     try {
-      setRefreshing(true);
       setPosts([]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       const res = await fetch("/posts");
@@ -44,27 +55,99 @@ export default function Index() {
     } catch (error) {
       console.error(error);
     } finally {
-      setRefreshing(false);
+      done();
     }
   };
 
+  const onPanRelease = () => {
+    pullDownPosition.value = withTiming(isReadyToRefresh.value ? 60 : 0, {
+      duration: 180,
+    });
+
+    if (isReadyToRefresh.value) {
+      onRefresh(() => {
+        pullDownPosition.value = withTiming(0, { duration: 100 });
+      });
+    }
+
+    setScrollEnabled(true);
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: () => false,
+
+      onMoveShouldSetPanResponderCapture: (_evt, g) => {
+        const atTop = scrollPosition.value <= 5;
+        const down = g.dy > 5;
+        const activate = atTop && down;
+        if (activate) {
+          setScrollEnabled(false);
+        }
+        return activate;
+      },
+
+      onPanResponderMove: (event, gestureState) => {
+        const max = 120;
+        pullDownPosition.value = Math.max(Math.min(gestureState.dy, max), 0);
+
+        if (
+          pullDownPosition.value >= max / 2 &&
+          isReadyToRefresh.value === false
+        ) {
+          isReadyToRefresh.value = true;
+        }
+
+        if (
+          pullDownPosition.value < max / 2 &&
+          isReadyToRefresh.value === true
+        ) {
+          isReadyToRefresh.value = false;
+        }
+      },
+      onPanResponderRelease: onPanRelease,
+      onPanResponderTerminate: onPanRelease,
+    })
+  ).current;
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollPosition.value = event.contentOffset.y;
+    },
+  });
+
+  const pullDownStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: pullDownPosition.value,
+        },
+      ],
+    };
+  });
+
   return (
-    <View
+    <Animated.View
       style={[
         style.container,
-        { paddingTop: insets.top },
         colorScheme === "dark" ? style.containerDark : style.containerLight,
+        pullDownStyle,
       ]}
+      {...panResponder.panHandlers}
     >
-      <FlashList
+      <AnimatedFlashList
         data={posts}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
         renderItem={({ item }) => <PostDetail item={item} />}
+        refreshControl={<View />}
         onEndReached={onEndReached}
         onEndReachedThreshold={2}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        scrollEnabled={scrollEnabled}
       />
-    </View>
+    </Animated.View>
   );
 }
 
