@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Thread {
   id: string;
@@ -97,15 +98,36 @@ export default function Modal() {
         } as unknown as Blob);
       });
     });
-    const res = await fetch("/posts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      body: formData,
+    Toast.show({
+      text1: "Posting...",
+      type: "info",
+      visibilityTime: 1500,
     });
-    const data = await res.json();
-    router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+
+    try {
+      const res = await fetch("/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      Toast.hide();
+      Toast.show({
+        text1: "Post posted",
+        type: "success",
+        visibilityTime: 1500,
+      });
+      router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        text1: "Post failed",
+        type: "error",
+        visibilityTime: 1500,
+      });
+    }
   };
 
   const updateThreadHashtag = (id: string, hashtag: string) => {

@@ -12,6 +12,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -189,6 +190,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>
+      <Toast />
     </AnimatedAppLoader>
   );
 }
