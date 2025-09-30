@@ -26,7 +26,7 @@ interface Thread {
   text: string;
   hashtag?: string;
   location?: string;
-  imageUris: string[];
+  imageUrls: string[];
 }
 
 export function ListFooter({
@@ -68,7 +68,7 @@ export default function Modal() {
   const colorScheme = useColorScheme();
 
   const [threads, setThreads] = useState<Thread[]>([
-    { id: Date.now().toString(), text: "", imageUris: [] },
+    { id: Date.now().toString(), text: "", imageUrls: [] },
   ]);
 
   const [isPosting, setIsPosting] = useState(false);
@@ -79,7 +79,34 @@ export default function Modal() {
 
   const handleCancel = () => {};
 
-  const handlePost = () => {};
+  const handlePost = async () => {
+    const formData = new FormData();
+    threads.forEach((thread, index) => {
+      formData.append(`posts[${index}][id]`, thread.id);
+      formData.append(`posts[${index}][content]`, thread.text);
+      formData.append(`posts[${index}][userId]`, "card07");
+      formData.append(
+        `posts[${index}][location]`,
+        thread.location ? thread.location : ""
+      );
+      thread.imageUrls.forEach((imageUrl, imageIndex) => {
+        formData.append(`posts[${index}][imageUrls][${imageIndex}]`, {
+          uri: imageUrl,
+          name: `image_${index}_${imageIndex}.png`,
+          type: "image/png",
+        } as unknown as Blob);
+      });
+    });
+    const res = await fetch("/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      body: formData,
+    });
+    const data = await res.json();
+    router.replace(`/@${data[0].userId}/post/${data[0].id}`);
+  };
 
   const updateThreadHashtag = (id: string, hashtag: string) => {
     setThreads((prevThreads) =>
@@ -99,9 +126,9 @@ export default function Modal() {
 
   const canAddThread =
     (threads.at(-1)?.text.trim().length ?? 0) > 0 ||
-    (threads.at(-1)?.imageUris.length ?? 0) > 0;
+    (threads.at(-1)?.imageUrls.length ?? 0) > 0;
   const canPost = threads.every(
-    (thread) => thread.text.trim().length > 0 || thread.imageUris.length > 0
+    (thread) => thread.text.trim().length > 0 || thread.imageUrls.length > 0
   );
 
   const removeThread = (id: string) => {
@@ -142,7 +169,7 @@ export default function Modal() {
           thread.id === id
             ? {
                 ...thread,
-                imageUris: thread.imageUris.concat(
+                imageUrls: thread.imageUrls.concat(
                   result.assets?.map((asset) => asset.uri) ?? []
                 ),
               }
@@ -184,7 +211,7 @@ export default function Modal() {
           thread.id === id
             ? {
                 ...thread,
-                imageUris: thread.imageUris.concat(
+                imageUrls: thread.imageUrls.concat(
                   result.assets?.map((asset) => asset.uri) ?? []
                 ),
               }
@@ -204,7 +231,7 @@ export default function Modal() {
         thread.id === id
           ? {
               ...thread,
-              imageUris: thread.imageUris.filter((uri) => uri !== uriToRemove),
+              imageUrls: thread.imageUrls.filter((uri) => uri !== uriToRemove),
             }
           : thread
       )
@@ -317,9 +344,9 @@ export default function Modal() {
           onChangeText={(text) => updateThreadText(item.id, text)}
           multiline
         />
-        {item.imageUris && item.imageUris.length > 0 && (
+        {item.imageUrls && item.imageUrls.length > 0 && (
           <FlatList
-            data={item.imageUris}
+            data={item.imageUrls}
             renderItem={({ item: uri, index: imgIndex }) => (
               <View style={styles.imagePreviewContainer}>
                 <Image source={{ uri }} style={styles.imagePreview} />
@@ -423,7 +450,7 @@ export default function Modal() {
               if (canAddThread) {
                 setThreads((prevThreads) => [
                   ...prevThreads,
-                  { id: Date.now().toString(), text: "", imageUris: [] },
+                  { id: Date.now().toString(), text: "", imageUrls: [] },
                 ]);
               }
             }}
@@ -736,28 +763,22 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 18,
+    fontSize: 15,
+    fontWeight: "600",
   },
   postButtonLight: {
     backgroundColor: "black",
+    color: "white",
   },
   postButtonDark: {
     backgroundColor: "white",
+    color: "black",
   },
   postButtonDisabledLight: {
     backgroundColor: "#ccc",
   },
   postButtonDisabledDark: {
     backgroundColor: "#555",
-  },
-  postButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  postButtonTextLight: {
-    color: "white",
-  },
-  postButtonTextDark: {
-    color: "black",
   },
   modalOverlay: {
     flex: 1,

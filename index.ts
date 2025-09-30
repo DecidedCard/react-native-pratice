@@ -87,23 +87,51 @@ if (__DEV__) {
       });
     },
     routes() {
-      this.post("/posts", (schema, request) => {
-        const { posts } = JSON.parse(request.requestBody);
+      this.post("/posts", async (schema, request) => {
+        const formData = request.requestBody as unknown as FormData;
+        const posts: Record<string, string | string[]>[] = [];
+        formData.forEach(async (value, key) => {
+          const match = key.match(/posts\[(\d+)\]\[(\w+)\](\[(\d+)\])?$/);
+          if (match) {
+            const [_, index, field, , imageIndex] = match;
+            const i = parseInt(index);
+            const imgI = parseInt(imageIndex);
+            if (!posts[i]) {
+              posts[i] = {};
+            }
+            if (field === "imageUrls") {
+              if (!posts[i].imageUrls) {
+                posts[i].imageUrls = [] as string[];
+              }
+              (posts[i].imageUrls as string[])[imgI] = (
+                value as unknown as { uri: string }
+              ).uri;
+            } else if (field === "location") {
+              posts[i].location = value as string;
+            } else {
+              posts[i][field] = value as string;
+            }
+          }
+        });
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         posts.forEach((post: any) => {
           schema.create("post", {
+            id: post.id,
             content: post.content,
             imageUrls: post.imageUrls,
             location: post.location,
-            user: schema.find("user", "card07"),
+            user: schema.find("user", userData!.id),
           });
         });
-        return new Response(200, {}, { posts });
+
+        console.log("post result", posts);
+        return posts;
       });
 
       this.get("/posts", (schema, request) => {
         let posts = schema.all("post");
         if (request.queryParams.type === "following") {
-          posts = posts.filter((post) => post.user?.id === userData.id);
+          posts = posts.filter((post) => post.user?.id === userData!.id);
         }
         let targetIndex = -1;
         if (request.queryParams.cursor) {
@@ -111,7 +139,9 @@ if (__DEV__) {
             (v) => v.id === request.queryParams.cursor
           );
         }
-        return posts.slice(targetIndex + 1, targetIndex + 11);
+        return posts
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
@@ -127,7 +157,9 @@ if (__DEV__) {
           );
         }
 
-        return comments.slice(targetIndex + 1, targetIndex + 11);
+        return comments
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/users/:id", (schema, request) => {

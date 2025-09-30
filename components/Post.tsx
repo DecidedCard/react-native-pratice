@@ -170,9 +170,7 @@ export default function PostDetail({ item }: { item: Post }) {
             />
           </Pressable>
         )}
-        {item.location && item.location.length > 0 && (
-          <Text style={styles.postText}>{item.location.join(", ")}</Text>
-        )}
+        {item.location && <Text style={styles.postText}>{item.location}</Text>}
       </View>
 
       <View style={styles.postActions}>
