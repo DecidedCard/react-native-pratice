@@ -6,6 +6,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -24,7 +25,33 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
   }),
+  handleSuccess: (notificationId) => {
+    console.log("handleSuccess", notificationId);
+  },
+  handleError: (notificationId, error) => {
+    console.log("handleError", notificationId, error);
+  },
 });
+
+async function sendPushNotification(expoPushToken: string) {
+  const message = {
+    to: expoPushToken,
+    sound: "default",
+    title: "Original Title",
+    body: "And here is the body!",
+    data: { someData: "goes here" },
+  };
+
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+}
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -127,6 +154,7 @@ function AnimatedSplashScreen({
   const [isAppReady, setIsAppReady] = useState(false);
   const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
     useState(false);
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const animation = useRef(new Animated.Value(1)).current;
   const { updateUser } = useContext(AuthContext);
 
@@ -152,20 +180,25 @@ function AnimatedSplashScreen({
       if (status !== "granted") {
         return Linking.openSettings();
       }
-      // Second, call scheduleNotificationAsync()
-      Notifications.scheduleNotificationAsync({
-        content: {
-          title: "App is ready",
-          body: "Try uploading new thread",
-        },
-        trigger: null,
+      const token = await Notifications.getExpoPushTokenAsync({
+        projectId:
+          Constants.expoConfig?.extra?.eas.projectId ??
+          Constants.easConfig?.projectId,
       });
+      console.log("push-token", token);
+      setExpoPushToken(token.data);
     } catch (error) {
       console.error(error);
     } finally {
       setIsAppReady(true);
     }
   };
+
+  useEffect(() => {
+    if (expoPushToken && Device.isDevice) {
+      sendPushNotification(expoPushToken);
+    }
+  }, [expoPushToken]);
 
   const rotateValue = animation.interpolate({
     inputRange: [0, 1],

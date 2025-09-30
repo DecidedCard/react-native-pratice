@@ -1,6 +1,7 @@
 import "expo-router/entry";
 
 import { faker } from "@faker-js/faker";
+import { isDevice } from "expo-device";
 import {
   belongsTo,
   createServer,
@@ -20,7 +21,7 @@ declare global {
 
 let userData;
 
-if (__DEV__) {
+if (__DEV__ && !isDevice) {
   if (window.server) {
     window.server.shutdown();
   }
