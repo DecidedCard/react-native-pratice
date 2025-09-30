@@ -6,13 +6,25 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Alert, Animated, StyleSheet, View } from "react-native";
+import { Alert, Animated, Linking, StyleSheet, View } from "react-native";
 import Toast from "react-native-toast-message";
+
+// First, set the handler that will cause the notification
+// to show the alert
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -136,6 +148,18 @@ function AnimatedSplashScreen({
       });
 
       await SplashScreen.hideAsync();
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        return Linking.openSettings();
+      }
+      // Second, call scheduleNotificationAsync()
+      Notifications.scheduleNotificationAsync({
+        content: {
+          title: "App is ready",
+          body: "Try uploading new thread",
+        },
+        trigger: null,
+      });
     } catch (error) {
       console.error(error);
     } finally {
