@@ -76,14 +76,29 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true,
-          "granularPermissions": [
-            "audio",
-            "photo"
-          ]
+          "granularPermissions": ["audio", "photo"]
         }
       ],
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": [
+              "https://devrepo.kakao.com/nexus/content/groups/public/"
+            ]
+          }
+        }
+      ],
+      [
+        "@react-native-kakao/core",
+        {
+          "nativeAppKey": "11c6efe3d3f6f998dd715b0bc165ce8a",
+          "android": { "authCodeHandlerActivity": true },
+          "ios": { "handleKakaoOpenUrl": true }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
