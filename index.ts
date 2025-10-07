@@ -8,7 +8,6 @@ import {
   Factory,
   hasMany,
   Model,
-  Response,
   RestSerializer,
   Server,
 } from "miragejs";
@@ -184,16 +183,16 @@ if (__DEV__ && !isDevice) {
         return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
-      this.post("/login", (schema, request) => {
-        const { username, password } = JSON.parse(request.requestBody);
+      // this.post("/login", (schema, request) => {
+      //   const { username, password } = JSON.parse(request.requestBody);
 
-        if (username === "card07" && password === "1234") {
-          const user = schema.find("user", username);
-          return user;
-        } else {
-          return new Response(401, {}, { message: "Invalid credentials" });
-        }
-      });
+      //   if (username === "card07" && password === "1234") {
+      //     const user = schema.find("user", username);
+      //     return user;
+      //   } else {
+      //     return new Response(401, {}, { message: "Invalid credentials" });
+      //   }
+      // });
 
       this.get("/user", (schema, request) => {
         const cursor = parseInt((request.queryParams.cursor as string) || "0");

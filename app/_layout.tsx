@@ -8,7 +8,7 @@ import { Asset } from "expo-asset";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import { Stack } from "expo-router";
+import { Href, Stack, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -155,6 +155,7 @@ function AnimatedSplashScreen({
   const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
     useState(false);
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  console.log("expoPushToken", expoPushToken);
   const animation = useRef(new Animated.Value(1)).current;
   const { updateUser } = useContext(AuthContext);
 
@@ -239,7 +240,38 @@ function AnimatedSplashScreen({
   );
 }
 
+function useNotificationObserver() {
+  const router = useRouter();
+  useEffect(() => {
+    function redirect(notification: Notifications.Notification) {
+      const url = notification.request.content.data?.url as string;
+      if (url && url.startsWith("practice://")) {
+        Alert.alert("redirect to url", url);
+        router.push(url.replace("practice://", "/") as Href);
+        // Linking.openURL(url);
+      }
+    }
+
+    const response = Notifications.getLastNotificationResponse();
+    if (response?.notification) {
+      redirect(response.notification);
+    }
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        redirect(response.notification);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [router]);
+}
+
 export default function RootLayout() {
+  useNotificationObserver();
+
   return (
     <AnimatedAppLoader image={require("../assets/images/react-logo.png")}>
       <StatusBar style="auto" animated />

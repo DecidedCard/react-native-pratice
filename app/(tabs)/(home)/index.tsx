@@ -27,9 +27,13 @@ export default function Index() {
   useEffect(() => {
     setPosts([]);
     const fetchData = async () => {
-      const res = await fetch(`/posts`);
-      const data = await res.json();
-      setPosts(data.posts);
+      try {
+        const res = await fetch(`/posts`);
+        const data = await res.json();
+        setPosts(data.posts);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     fetchData();
