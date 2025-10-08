@@ -39,3 +39,5 @@ yarn-error.*
 app-example
 google-services.json
 react-native-practice-*.json
+
+.env

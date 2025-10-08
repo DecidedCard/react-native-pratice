@@ -13,7 +13,7 @@ export default function Login() {
   const isLoggedIn = !!user;
 
   useEffect(() => {
-    initializeKakaoSDK("11c6efe3d3f6f998dd715b0bc165ce8a");
+    initializeKakaoSDK(process.env.EXPO_PUBLIC_KAKAO_NATIVE_KEY as string);
   }, []);
 
   const onKakaoLogin = async () => {
