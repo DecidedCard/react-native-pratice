@@ -1,8 +1,9 @@
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import { login as kakaoLogin, me } from "@react-native-kakao/user";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { Redirect } from "expo-router";
 import { useContext, useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthContext } from "./_layout";
 
@@ -20,6 +21,20 @@ export default function Login() {
     console.log(result);
     const user = await me();
     console.log(user);
+  };
+
+  const onAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      console.log("credential", credential);
+    } catch (e) {
+      console.error("error", e);
+    }
   };
 
   if (isLoggedIn) {
@@ -40,12 +55,14 @@ export default function Login() {
           KaKao Login
         </Text>
       </Pressable>
-      <Pressable
-        onPress={login}
-        style={[styles.loginButton, styles.appleLoginButton]}
-      >
-        <Text style={styles.loginButtonText}>Apple Login</Text>
-      </Pressable>
+      {Platform.OS === "ios" && (
+        <Pressable
+          onPress={onAppleLogin}
+          style={[styles.loginButton, styles.appleLoginButton]}
+        >
+          <Text style={styles.loginButtonText}>Apple Login</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
