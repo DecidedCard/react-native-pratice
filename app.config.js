@@ -4,7 +4,7 @@ export default {
     slug: "react-native-practice",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/images/avatar.png",
     scheme: "practice",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -18,7 +18,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
+        foregroundImage: "./assets/images/avatar.png",
         backgroundColor: "#ffffff",
       },
       edgeToEdgeEnabled: true,
