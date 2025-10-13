@@ -87,7 +87,7 @@ export default function Layout() {
           />
           <Animated.Image
             style={[style.headerLogo, rotateStyle]}
-            source={require("../../../assets/images/react-logo.png")}
+            source={require("../../../assets/images/avatar.png")}
           />
           {!isLoggedIn && (
             <Pressable
@@ -106,7 +106,7 @@ export default function Layout() {
                     : style.loginButtonTextLight
                 }
               >
-                로그인
+                로그인!!
               </Text>
             </Pressable>
           )}

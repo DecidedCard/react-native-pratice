@@ -9,6 +9,7 @@ import {
 } from "@react-navigation/material-top-tabs";
 import { ParamListBase, TabNavigationState } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
+import Constants from "expo-constants";
 import { useLocalSearchParams, withLayoutContext } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import {
@@ -48,7 +49,11 @@ export default function Layout() {
   useEffect(() => {
     const fetchData = async () => {
       setUserState(null);
-      const res = await fetch(`/users/${username}`);
+      const res = await fetch(
+        `${
+          __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+        }/users/${username}`
+      );
       const data = await res.json();
       setUserState(data.user);
     };

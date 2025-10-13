@@ -1,4 +1,5 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
@@ -105,13 +106,16 @@ export default function Modal() {
     });
 
     try {
-      const res = await fetch("/posts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
-      });
+      const res = await fetch(
+        `${__DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl}/posts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: formData,
+        }
+      );
       const data = await res.json();
       Toast.hide();
       Toast.show({

@@ -12,6 +12,7 @@ import { Href, Stack, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Alert, Animated, Linking, StyleSheet, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -91,13 +92,16 @@ function AnimatedAppLoader({
   }, [image]);
 
   const login = () => {
-    return fetch("/login", {
-      method: "POST",
-      body: JSON.stringify({
-        username: "card07",
-        password: "1234",
-      }),
-    })
+    return fetch(
+      `${__DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl}/login`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          username: "card07",
+          password: "1234",
+        }),
+      }
+    )
       .then((res) => {
         if (res.status >= 400) {
           return Alert.alert("Error", "Invalid credentials");
@@ -169,12 +173,36 @@ function AnimatedSplashScreen({
     }
   }, [isAppReady, animation]);
 
+  const onFetchUpdateAsync = async () => {
+    try {
+      if (!__DEV__) {
+        const update = await Updates.checkForUpdateAsync();
+
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          Alert.alert("Update available", "Please update your app", [
+            {
+              text: "Update",
+              onPress: () => Updates.reloadAsync(),
+            },
+            { text: "Cancel", style: "cancel" },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const onImageLoaded = async () => {
     try {
       // 데이터 준비
-      await AsyncStorage.getItem(ASYNC_STORAGE_USER).then((user) => {
-        updateUser?.(user ? JSON.parse(user) : null);
-      });
+      await Promise.all([
+        AsyncStorage.getItem(ASYNC_STORAGE_USER).then((user) => {
+          updateUser?.(user ? JSON.parse(user) : null);
+        }),
+        onFetchUpdateAsync(),
+      ]);
 
       await SplashScreen.hideAsync();
       const { status } = await Notifications.requestPermissionsAsync();

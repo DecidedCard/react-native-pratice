@@ -1,6 +1,7 @@
 import { AuthContext } from "@/app/_layout";
 import Post from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
+import Constants from "expo-constants";
 import { router, useLocalSearchParams, usePathname } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import {
@@ -30,7 +31,7 @@ const Header = () => {
             : styles.postInputTextLight
         }
       >
-        What's new?
+        What&apos;s new?
       </Text>
       <Pressable
         onPress={() => {
@@ -65,7 +66,11 @@ export default function Index() {
 
   useEffect(() => {
     setThreads([]);
-    fetch(`/users/${username?.slice(1)}/reposts`)
+    fetch(
+      `${
+        __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+      }/users/${username?.slice(1)}/reposts`
+    )
       .then((res) => res.json())
       .then((data) => {
         setThreads(data.posts);
@@ -73,11 +78,11 @@ export default function Index() {
   }, [username]);
 
   const onEndReached = () => {
-    console.log(
-      "onEndReached",
-      `/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`
-    );
-    fetch(`/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`)
+    fetch(
+      `${
+        __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+      }/users/${username?.slice(1)}/threads?cursor=${threads.at(-1)?.id}`
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data.posts.length > 0) {

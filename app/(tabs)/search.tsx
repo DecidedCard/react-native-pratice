@@ -1,6 +1,7 @@
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import Constants from "expo-constants";
 import { useContext, useEffect, useState } from "react";
 import {
   Image,
@@ -35,7 +36,9 @@ export default function Index() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/user?cursor=1");
+      const res = await fetch(
+        `${__DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl}/user?cursor=1`
+      );
       const data = await res.json();
 
       setUserData(data);

@@ -1,5 +1,6 @@
 import PostDetail, { Post } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
+import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { PanResponder, StyleSheet, useColorScheme, View } from "react-native";
@@ -27,7 +28,11 @@ export default function Following() {
   useEffect(() => {
     setPosts([]);
     const fetchData = async () => {
-      const res = await fetch(`/posts?type=following`);
+      const res = await fetch(
+        `${
+          __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+        }/posts?type=following`
+      );
       const data = await res.json();
       setPosts(data.posts);
     };
@@ -38,7 +43,9 @@ export default function Following() {
   const onEndReached = useCallback(async () => {
     if (posts.length > 0) {
       const res = await fetch(
-        `/posts?type=following&cursor=${posts.at(-1)?.id}`
+        `${
+          __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+        }/posts?type=following&cursor=${posts.at(-1)?.id}`
       );
       const data = await res.json();
       if (data.posts.length > 0) {
@@ -51,7 +58,9 @@ export default function Following() {
     try {
       setPosts([]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      const res = await fetch("/posts");
+      const res = await fetch(
+        `${__DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl}/posts`
+      );
       const data = await res.json();
       setPosts(data.posts);
     } catch (error) {

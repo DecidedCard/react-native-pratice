@@ -2,6 +2,7 @@ import PostDetail, { Post } from "@/components/Post";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
+import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -27,13 +28,19 @@ export default function PostScreen() {
 
   useEffect(() => {
     const fetchPostData = async () => {
-      const res = await fetch(`/posts/${postId}`);
+      const res = await fetch(
+        `${__DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl}/posts/${postId}`
+      );
       const data = await res.json();
       setPost(data.post);
     };
 
     const fetchCommentsData = async () => {
-      const res = await fetch(`/posts/${postId}/comments`);
+      const res = await fetch(
+        `${
+          __DEV__ ? "" : Constants.expoConfig?.extra?.apiUrl
+        }/posts/${postId}/comments`
+      );
       const data = await res.json();
       setComments(data.posts);
     };
